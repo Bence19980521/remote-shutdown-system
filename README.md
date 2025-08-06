@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Remote Shutdown System
 
 Egy komplex rendszer, amely lehetővé teszi a számítógép távoli leállítását mobil alkalmazásból, akkor is, ha a telefon és a gép nem ugyanazon a hálózaton van.
@@ -147,3 +148,6 @@ Egy komplex rendszer, amely lehetővé teszi a számítógép távoli leállít�
 ## Licenc
 
 Ez a projekt oktatási célokra készült. Éles használat előtt implementálj megfelelő biztonsági intézkedéseket.
+=======
+# remote-shutdown-system
+>>>>>>> 3d1fc2e111ea47224c0ee5733fca696c9a452f93
