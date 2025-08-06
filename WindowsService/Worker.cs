@@ -73,23 +73,17 @@ public class Worker : BackgroundService
             });
 
             // Handle shutdown command
-            _connection.On<string>("Shutdown", async (deviceId) =>
+            _connection.On("ShutdownCommand", async () =>
             {
-                if (deviceId == _deviceId || deviceId == "ALL")
-                {
-                    _logger.LogWarning($"Shutdown command received for device: {deviceId}");
-                    await ShutdownComputer();
-                }
+                _logger.LogWarning($"Shutdown command received for device: {_deviceId}");
+                await ShutdownComputer();
             });
 
             // Handle restart command
-            _connection.On<string>("Restart", async (deviceId) =>
+            _connection.On("RestartCommand", async () =>
             {
-                if (deviceId == _deviceId || deviceId == "ALL")
-                {
-                    _logger.LogWarning($"Restart command received for device: {deviceId}");
-                    await RestartComputer();
-                }
+                _logger.LogWarning($"Restart command received for device: {_deviceId}");
+                await RestartComputer();
             });
 
             // Handle status request
