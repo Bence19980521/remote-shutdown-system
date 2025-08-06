@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug SignalR Server",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/SignalRServer/bin/Debug/net8.0/SignalRServer.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/SignalRServer",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Debug Windows Service (Console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/WindowsService/bin/Debug/net8.0/RemoteShutdownService.dll",
+            "args": ["--console"],
+            "cwd": "${workspaceFolder}/WindowsService",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        }
+    ]
+}

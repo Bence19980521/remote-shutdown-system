@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remote Shutdown - QR Kód</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: inline-block;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .url {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            word-break: break-all;
+            font-family: monospace;
+        }
+        .instructions {
+            text-align: left;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Remote Shutdown Mobil App</h1>
+        
+        <div class="qr-container">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://remote-shutdown-system.onrender.com/mobile.html" 
+                 alt="QR kód a mobil apphoz" />
+        </div>
+        
+        <div class="url">
+            https://remote-shutdown-system.onrender.com/mobile.html
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Telepítési útmutató:</h3>
+            
+            <div class="step">
+                <strong>1. QR kód beolvasása:</strong><br>
+                Nyisd meg a telefon kameráját vagy QR kód olvasót, és olvasd be a fenti QR kódot
+            </div>
+            
+            <div class="step">
+                <strong>2. Vagy másold be az URL-t:</strong><br>
+                Nyisd meg a telefon böngészőjét és másold be a fenti linket
+            </div>
+            
+            <div class="step">
+                <strong>3. PWA telepítés (Android):</strong><br>
+                Chrome böngészőben → "Hozzáadás a kezdőképernyőhöz" opció
+            </div>
+            
+            <div class="step">
+                <strong>4. PWA telepítés (iPhone):</strong><br>
+                Safari → Megosztás gomb → "Hozzáadás a kezdőképernyőhöz"
+            </div>
+            
+            <div class="step">
+                <strong>5. Használat:</strong><br>
+                Az app ikonja megjelenik a kezdőképernyőn, mint egy natív alkalmazás
+            </div>
+        </div>
+        
+        <p><strong>💡 Tipp:</strong> Ha PWA-ként telepíted, fullscreen módban fog működni, mint egy igazi alkalmazás!</p>
+    </div>
+</body>
+</html>

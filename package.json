@@ -1,0 +1,11 @@
+{
+  "name": "remote-shutdown-system",
+  "version": "1.0.0",
+  "description": "Remote PC Shutdown System",
+  "private": true,
+  "workspaces": [
+    "MobileApp",
+    "SignalRServer",
+    "WindowsService"
+  ]
+}

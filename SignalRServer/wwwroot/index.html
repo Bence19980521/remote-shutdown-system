@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Távoli PC Leállító</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .device-list {
+            margin: 20px 0;
+        }
+        .device {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .device-name {
+            font-weight: bold;
+            color: #495057;
+        }
+        .device-status {
+            color: #28a745;
+            font-size: 0.9em;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .shutdown-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        .shutdown-btn:hover {
+            background-color: #c82333;
+        }
+        .restart-btn {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .restart-btn:hover {
+            background-color: #e0a800;
+        }
+        .status {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖥️ Távoli PC Leállító Rendszer</h1>
+        
+        <div id="status" class="status">
+            Csatlakozás a szerverhez...
+        </div>
+        
+        <div class="device-list">
+            <h3>Kapcsolódott eszközök:</h3>
+            <div id="devices">
+                <!-- Az eszközök itt jelennek meg -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Konfiguráció - változtasd meg a saját felhő URL-edre!
+        const CLOUD_URL = "https://remote-shutdown-system.onrender.com/shutdownhub";
+        const LOCAL_URL = "http://localhost:5000/shutdownhub";
+        
+        // Próbálja meg először a felhő URL-t, ha az nem működik, akkor a helyi URL-t
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(CLOUD_URL) // Változtasd meg a saját felhő URL-edre!
+            .build();
+
+        const statusDiv = document.getElementById('status');
+        const devicesDiv = document.getElementById('devices');
+        let connectedDevices = new Set();
+
+        connection.start().then(function () {
+            statusDiv.innerHTML = '✅ Sikeresen csatlakozva a szerverhez!';
+            statusDiv.className = 'status success';
+            
+            // Kérjük le a kapcsolódott eszközök listáját
+            connection.invoke("GetConnectedDevices").catch(function (err) {
+                console.error(err.toString());
+            });
+        }).catch(function (err) {
+            statusDiv.innerHTML = '❌ Hiba a csatlakozás során: ' + err.toString();
+            statusDiv.className = 'status error';
+            console.error(err.toString());
+        });
+
+        // Eszköz csatlakozott
+        connection.on("DeviceConnected", function (deviceId) {
+            connectedDevices.add(deviceId);
+            updateDeviceList();
+            statusDiv.innerHTML = '📱 Új eszköz csatlakozott: ' + deviceId;
+            statusDiv.className = 'status success';
+        });
+
+        // Eszköz lecsatlakozott
+        connection.on("DeviceDisconnected", function (deviceId) {
+            connectedDevices.delete(deviceId);
+            updateDeviceList();
+            statusDiv.innerHTML = '📱 Eszköz lecsatlakozott: ' + deviceId;
+            statusDiv.className = 'status';
+        });
+
+        // Kapcsolódott eszközök listája
+        connection.on("ConnectedDevicesList", function (devices) {
+            connectedDevices = new Set(devices);
+            updateDeviceList();
+        });
+
+        // Parancs eredménye
+        connection.on("CommandResult", function (deviceId, success, message) {
+            if (success) {
+                statusDiv.innerHTML = '✅ Parancs sikeresen elküldve a(z) ' + deviceId + ' eszközre';
+                statusDiv.className = 'status success';
+            } else {
+                statusDiv.innerHTML = '❌ Hiba a parancs küldésénél: ' + message;
+                statusDiv.className = 'status error';
+            }
+        });
+
+        function updateDeviceList() {
+            devicesDiv.innerHTML = '';
+            
+            if (connectedDevices.size === 0) {
+                devicesDiv.innerHTML = '<p style="text-align: center; color: #6c757d;">Nincsenek kapcsolódott eszközök</p>';
+                return;
+            }
+
+            connectedDevices.forEach(deviceId => {
+                const deviceDiv = document.createElement('div');
+                deviceDiv.className = 'device';
+                deviceDiv.innerHTML = `
+                    <div>
+                        <div class="device-name">${deviceId}</div>
+                        <div class="device-status">🟢 Online</div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="shutdown-btn" onclick="sendCommand('${deviceId}', 'shutdown')">
+                            🔴 Leállítás
+                        </button>
+                        <button class="restart-btn" onclick="sendCommand('${deviceId}', 'restart')">
+                            🔄 Újraindítás
+                        </button>
+                    </div>
+                `;
+                devicesDiv.appendChild(deviceDiv);
+            });
+        }
+
+        function sendCommand(deviceId, command) {
+            if (confirm(`Biztosan ${command === 'shutdown' ? 'leállítod' : 'újraindítod'} a(z) ${deviceId} eszközt?`)) {
+                connection.invoke("SendShutdownCommand", deviceId, command)
+                    .catch(function (err) {
+                        statusDiv.innerHTML = '❌ Hiba a parancs küldésénél: ' + err.toString();
+                        statusDiv.className = 'status error';
+                        console.error(err.toString());
+                    });
+            }
+        }
+    </script>
+</body>
+</html>

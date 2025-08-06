@@ -1,0 +1,16 @@
+node_modules/
+bin/
+obj/
+*.log
+*.tmp
+.env
+.DS_Store
+Thumbs.db
+*.user
+*.suo
+*.cache
+.vscode/settings.json
+.expo/
+dist/
+build/
+out/

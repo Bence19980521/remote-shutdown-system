@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Távoli PC Leállító</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    
+    <!-- PWA Meta tags -->
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PC Shutdown">
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding-top: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .status.connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .device {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .device-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .device-status {
+            color: #28a745;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .shutdown-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .shutdown-btn:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+        
+        .restart-btn {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .restart-btn:hover {
+            background: #e0a800;
+            transform: translateY(-1px);
+        }
+        
+        .no-devices {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px 20px;
+        }
+        
+        .no-devices span {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        .install-prompt {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .install-btn {
+            background: white;
+            color: #007bff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖥️ PC Távvezérlő</h1>
+            <p>Állítsd le vagy indítsd újra a PC-det bárhonnan</p>
+        </div>
+        
+        <div id="install-prompt" class="install-prompt">
+            📱 Telepítsd az alkalmazást a kezdőképernyőre!
+            <button class="install-btn" onclick="installApp()">Telepítés</button>
+        </div>
+        
+        <div class="card">
+            <div id="status" class="status connecting">
+                🔄 Csatlakozás a szerverhez...
+            </div>
+            
+            <div id="devices">
+                <!-- Az eszközök itt jelennek meg -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PWA Installation
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-prompt').style.display = 'block';
+        });
+        
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('install-prompt').style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+        
+        // SignalR Configuration
+        const CLOUD_URL = "https://remote-shutdown-system.onrender.com/shutdownhub";
+        const LOCAL_URL = "http://localhost:5000/shutdownhub";
+        
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(CLOUD_URL) // Használd a felhő URL-t
+            .build();
+
+        const statusDiv = document.getElementById('status');
+        const devicesDiv = document.getElementById('devices');
+        let connectedDevices = new Set();
+
+        connection.start().then(function () {
+            statusDiv.innerHTML = '✅ Sikeresen csatlakozva!';
+            statusDiv.className = 'status connected';
+            
+            connection.invoke("GetConnectedDevices").catch(function (err) {
+                console.error(err.toString());
+            });
+        }).catch(function (err) {
+            statusDiv.innerHTML = '❌ Csatlakozási hiba - próbáld meg később';
+            statusDiv.className = 'status error';
+            console.error(err.toString());
+        });
+
+        // SignalR Event Handlers
+        connection.on("DeviceConnected", function (deviceId) {
+            connectedDevices.add(deviceId);
+            updateDeviceList();
+            statusDiv.innerHTML = '📱 Új eszköz: ' + deviceId.split('_')[0];
+            statusDiv.className = 'status connected';
+        });
+
+        connection.on("DeviceDisconnected", function (deviceId) {
+            connectedDevices.delete(deviceId);
+            updateDeviceList();
+        });
+
+        connection.on("ConnectedDevicesList", function (devices) {
+            connectedDevices = new Set(devices);
+            updateDeviceList();
+        });
+
+        connection.on("CommandResult", function (deviceId, success, message) {
+            if (success) {
+                statusDiv.innerHTML = '✅ Parancs elküldve!';
+                statusDiv.className = 'status connected';
+            } else {
+                statusDiv.innerHTML = '❌ Hiba: ' + message;
+                statusDiv.className = 'status error';
+            }
+            
+            setTimeout(() => {
+                statusDiv.innerHTML = '✅ Sikeresen csatlakozva!';
+                statusDiv.className = 'status connected';
+            }, 3000);
+        });
+
+        function updateDeviceList() {
+            devicesDiv.innerHTML = '';
+            
+            if (connectedDevices.size === 0) {
+                devicesDiv.innerHTML = `
+                    <div class="no-devices">
+                        <span>💻</span>
+                        <div>Nincsenek kapcsolódott PC-k</div>
+                        <small>Indítsd el a háttérszolgáltatást a PC-n</small>
+                    </div>
+                `;
+                return;
+            }
+
+            connectedDevices.forEach(deviceId => {
+                const deviceName = deviceId.split('_')[0];
+                const deviceDiv = document.createElement('div');
+                deviceDiv.className = 'device';
+                deviceDiv.innerHTML = `
+                    <div class="device-name">💻 ${deviceName}</div>
+                    <div class="device-status">🟢 Online</div>
+                    <div class="action-buttons">
+                        <button class="shutdown-btn" onclick="sendCommand('${deviceId}', 'shutdown')">
+                            🔴 Leállítás
+                        </button>
+                        <button class="restart-btn" onclick="sendCommand('${deviceId}', 'restart')">
+                            🔄 Újraindítás
+                        </button>
+                    </div>
+                `;
+                devicesDiv.appendChild(deviceDiv);
+            });
+        }
+
+        function sendCommand(deviceId, command) {
+            const actionText = command === 'shutdown' ? 'leállítod' : 'újraindítod';
+            const deviceName = deviceId.split('_')[0];
+            
+            if (confirm(`Biztosan ${actionText} a ${deviceName} számítógépet?`)) {
+                statusDiv.innerHTML = '⏳ Parancs küldése...';
+                statusDiv.className = 'status connecting';
+                
+                connection.invoke("SendShutdownCommand", deviceId, command)
+                    .catch(function (err) {
+                        statusDiv.innerHTML = '❌ Hiba: ' + err.toString();
+                        statusDiv.className = 'status error';
+                        console.error(err.toString());
+                    });
+            }
+        }
+    </script>
+</body>
+</html>

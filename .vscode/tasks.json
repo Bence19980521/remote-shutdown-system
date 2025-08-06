@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build All Projects",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"Write-Host 'Building Windows Service...'; cd WindowsService; dotnet restore; dotnet build -c Release; Write-Host 'Building SignalR Server...'; cd ../SignalRServer; dotnet restore; dotnet build -c Release; Write-Host 'Installing Mobile App dependencies...'; cd ../MobileApp; npm install; Write-Host 'All projects built successfully!'"
+			],
+			"group": "build",
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"isBackground": false
+		}
+	]
+}

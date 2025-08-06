@@ -1,0 +1,17 @@
+{
+    "name": "PC Távvezérlő",
+    "short_name": "PC Control",
+    "description": "Távoli PC leállító alkalmazás",
+    "start_url": "/mobile.html",
+    "display": "standalone",
+    "background_color": "#667eea",
+    "theme_color": "#007bff",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMwMDdiZmYiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0yMCA2SDE2VjRjMC0xLjExLS44OS0yLTItMkg2Yy0xLjExIDAtMiAuODktMiAydjJINGMtMS4xMSAwLTIgLjg5LTIgMnYxMGMwIDEuMTEuODkgMiAyIDJoMTZjMS4xMSAwIDItLjg5IDItMlY4YzAtMS4xMS0uODktMi0yLTJ6TTYgNGgxMnYySDZWNHptMTQgMTRINFY4aDJ2MmgxMlY4aDJ2MTB6Ii8+CjxyZWN0IHg9IjYiIHk9IjEwIiB3aWR0aD0iMTIiIGhlaWdodD0iOCIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cjwvc3ZnPgo=",
+            "sizes": "192x192",
+            "type": "image/svg+xml"
+        }
+    ]
+}
