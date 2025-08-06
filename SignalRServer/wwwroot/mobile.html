@@ -349,7 +349,14 @@
                 statusDiv.innerHTML = '⏳ Parancs küldése...';
                 statusDiv.className = 'status connecting';
                 
-                connection.invoke("SendShutdownCommand", deviceId, command)
+                // Use the correct method names: ShutdownDevice or RestartDevice
+                const methodName = command === 'shutdown' ? 'ShutdownDevice' : 'RestartDevice';
+                
+                connection.invoke(methodName, deviceId)
+                    .then(function() {
+                        statusDiv.innerHTML = '✅ Parancs elküldve!';
+                        statusDiv.className = 'status connected';
+                    })
                     .catch(function (err) {
                         statusDiv.innerHTML = '❌ Hiba: ' + err.toString();
                         statusDiv.className = 'status error';
