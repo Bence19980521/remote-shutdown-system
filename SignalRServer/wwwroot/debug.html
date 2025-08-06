@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Remote Shutdown - Connection Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .connecting { background: #fff3cd; }
+        .connected { background: #d4edda; }
+        .error { background: #f8d7da; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Connection Debug</h1>
+    
+    <div id="status" class="status connecting">
+        🔄 Csatlakozás...
+    </div>
+    
+    <h3>Csatlakozott eszközök:</h3>
+    <div id="devices">
+        <em>Nincsenek adatok...</em>
+    </div>
+    
+    <h3>Debug info:</h3>
+    <pre id="debug"></pre>
+    
+    <script src="https://unpkg.com/@microsoft/signalr@latest/dist/browser/signalr.min.js"></script>
+    <script>
+        const statusDiv = document.getElementById('status');
+        const devicesDiv = document.getElementById('devices');
+        const debugDiv = document.getElementById('debug');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugDiv.textContent += `[${timestamp}] ${message}\n`;
+            console.log(message);
+        }
+        
+        log('Initializing SignalR connection...');
+        
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://remote-shutdown-system.onrender.com/shutdownhub")
+            .build();
+            
+        // Connection events
+        connection.onclose((error) => {
+            log(`Connection closed: ${error}`);
+            statusDiv.innerHTML = '❌ Kapcsolat lezárva';
+            statusDiv.className = 'status error';
+        });
+        
+        connection.onreconnecting((error) => {
+            log(`Connection reconnecting: ${error}`);
+            statusDiv.innerHTML = '🔄 Újracsatlakozás...';
+            statusDiv.className = 'status connecting';
+        });
+        
+        connection.onreconnected((connectionId) => {
+            log(`Connection reconnected: ${connectionId}`);
+            statusDiv.innerHTML = '✅ Újracsatlakozva';
+            statusDiv.className = 'status connected';
+        });
+        
+        // Listen for device updates
+        connection.on("DeviceRegistered", function(deviceId, deviceName) {
+            log(`Device registered: ${deviceId} (${deviceName})`);
+            updateDeviceList();
+        });
+        
+        connection.on("DeviceDisconnected", function(deviceId) {
+            log(`Device disconnected: ${deviceId}`);
+            updateDeviceList();
+        });
+        
+        // Start connection
+        connection.start().then(function() {
+            log('SignalR connection established');
+            statusDiv.innerHTML = '✅ Csatlakozva a szerverhez';
+            statusDiv.className = 'status connected';
+            
+            // Request device list
+            connection.invoke("GetConnectedDevices").then(function(devices) {
+                log(`Received device list: ${JSON.stringify(devices)}`);
+                updateDeviceList(devices);
+            }).catch(function(err) {
+                log(`Error getting device list: ${err}`);
+            });
+            
+        }).catch(function(err) {
+            log(`Connection failed: ${err}`);
+            statusDiv.innerHTML = '❌ Kapcsolódási hiba: ' + err.toString();
+            statusDiv.className = 'status error';
+        });
+        
+        function updateDeviceList(devices = []) {
+            if (!Array.isArray(devices)) {
+                devices = Array.from(devices || []);
+            }
+            
+            if (devices.length === 0) {
+                devicesDiv.innerHTML = '<em>Nincsenek csatlakozott eszközök</em>';
+            } else {
+                devicesDiv.innerHTML = devices.map(device => `
+                    <div style="padding: 10px; background: #f0f0f0; margin: 5px 0; border-radius: 5px;">
+                        💻 ${device}
+                    </div>
+                `).join('');
+            }
+        }
+    </script>
+</body>
+</html>
