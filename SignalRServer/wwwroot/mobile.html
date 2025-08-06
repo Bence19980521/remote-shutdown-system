@@ -261,6 +261,13 @@
             statusDiv.className = 'status connected';
         });
 
+        connection.on("DeviceRegistered", function (deviceId, deviceName) {
+            connectedDevices.add(deviceId);
+            updateDeviceList();
+            statusDiv.innerHTML = '📱 Eszköz regisztrálva: ' + deviceName;
+            statusDiv.className = 'status connected';
+        });
+
         connection.on("DeviceDisconnected", function (deviceId) {
             connectedDevices.delete(deviceId);
             updateDeviceList();
@@ -268,6 +275,13 @@
 
         connection.on("ConnectedDevicesList", function (devices) {
             connectedDevices = new Set(devices);
+            updateDeviceList();
+        });
+
+        connection.on("DeviceList", function (devices) {
+            // Convert device objects to device IDs
+            const deviceIds = devices.map(device => device.deviceId || device);
+            connectedDevices = new Set(deviceIds);
             updateDeviceList();
         });
 

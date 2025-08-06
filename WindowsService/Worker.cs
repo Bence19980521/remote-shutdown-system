@@ -26,22 +26,25 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation($"Worker starting. Server URL: {_serverUrl}, Device ID: {_deviceId}");
+        
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
+                _logger.LogInformation("Attempting to connect to SignalR hub...");
                 await ConnectToSignalR();
                 
                 if (_connection?.State == HubConnectionState.Connected)
                 {
-                    _logger.LogInformation("Connected to SignalR hub");
+                    _logger.LogInformation("Successfully connected to SignalR hub");
                     
                     // Wait for connection to be closed or cancellation
                     await Task.Delay(5000, stoppingToken);
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to connect to SignalR hub, retrying in 30 seconds...");
+                    _logger.LogWarning($"Failed to connect to SignalR hub (State: {_connection?.State}), retrying in 30 seconds...");
                     await Task.Delay(30000, stoppingToken);
                 }
             }
