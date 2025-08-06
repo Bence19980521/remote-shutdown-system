@@ -1,19 +1,15 @@
 <<<<<<< HEAD
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
-
 namespace SignalRServer.Hubs;
-
 public class ShutdownHub : Hub
 {
     private static readonly ConcurrentDictionary<string, DeviceInfo> ConnectedDevices = new();
     private readonly ILogger<ShutdownHub> _logger;
-
     public ShutdownHub(ILogger<ShutdownHub> logger)
     {
         _logger = logger;
     }
-
     public async Task RegisterDevice(string deviceId, string deviceName)
     {
         var deviceInfo = new DeviceInfo
@@ -23,7 +19,6 @@ public class ShutdownHub : Hub
             ConnectionId = Context.ConnectionId,
             LastSeen = DateTime.UtcNow
         };
-
         ConnectedDevices.AddOrUpdate(deviceId, deviceInfo, (key, oldValue) => deviceInfo);
         
         _logger.LogInformation($"Device registered: {deviceName} ({deviceId})");
@@ -31,19 +26,16 @@ public class ShutdownHub : Hub
         // Notify all clients about the new device
         await Clients.All.SendAsync("DeviceRegistered", deviceId, deviceName);
     }
-
     public async Task GetDevices()
     {
         var onlineDevices = ConnectedDevices.Values
             .Where(d => DateTime.UtcNow.Subtract(d.LastSeen).TotalMinutes < 5)
             .ToList();
-
         foreach (var device in onlineDevices)
         {
             await Clients.Caller.SendAsync("DeviceRegistered", device.DeviceId, device.DeviceName);
         }
     }
-
     public async Task Shutdown(string deviceId)
     {
         _logger.LogWarning($"Shutdown command received for device: {deviceId}");
@@ -63,7 +55,6 @@ public class ShutdownHub : Hub
             await Clients.Caller.SendAsync("Error", $"Device {deviceId} not found or offline");
         }
     }
-
     public async Task Restart(string deviceId)
     {
         _logger.LogWarning($"Restart command received for device: {deviceId}");
@@ -83,7 +74,6 @@ public class ShutdownHub : Hub
             await Clients.Caller.SendAsync("Error", $"Device {deviceId} not found or offline");
         }
     }
-
     public async Task GetStatus(string deviceId)
     {
         _logger.LogInformation($"Status request for device: {deviceId}");
@@ -97,31 +87,26 @@ public class ShutdownHub : Hub
             await Clients.Caller.SendAsync("Error", $"Device {deviceId} not found or offline");
         }
     }
-
     public async Task ShutdownConfirmation(string deviceId, string message)
     {
         _logger.LogInformation($"Shutdown confirmation from {deviceId}: {message}");
         await Clients.All.SendAsync("ShutdownConfirmation", deviceId, message);
     }
-
     public async Task RestartConfirmation(string deviceId, string message)
     {
         _logger.LogInformation($"Restart confirmation from {deviceId}: {message}");
         await Clients.All.SendAsync("RestartConfirmation", deviceId, message);
     }
-
     public async Task DeviceStatus(string deviceId, object status)
     {
         _logger.LogInformation($"Status received from {deviceId}");
         await Clients.All.SendAsync("DeviceStatus", deviceId, status);
     }
-
     public override async Task OnConnectedAsync()
     {
         _logger.LogInformation($"Client connected: {Context.ConnectionId}");
         await base.OnConnectedAsync();
     }
-
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         _logger.LogInformation($"Client disconnected: {Context.ConnectionId}");
@@ -134,11 +119,9 @@ public class ShutdownHub : Hub
             await Clients.All.SendAsync("DeviceDisconnected", disconnectedDevice.DeviceId);
             _logger.LogInformation($"Device disconnected: {disconnectedDevice.DeviceName}");
         }
-
         await base.OnDisconnectedAsync(exception);
     }
 }
-
 public class DeviceInfo
 {
     public string DeviceId { get; set; } = string.Empty;
@@ -149,19 +132,15 @@ public class DeviceInfo
 =======
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
-
 namespace SignalRServer.Hubs;
-
 public class ShutdownHub : Hub
 {
     private static readonly ConcurrentDictionary<string, DeviceInfo> ConnectedDevices = new();
     private readonly ILogger<ShutdownHub> _logger;
-
     public ShutdownHub(ILogger<ShutdownHub> logger)
     {
         _logger = logger;
     }
-
     public async Task RegisterDevice(string deviceId, string deviceName)
     {
         var deviceInfo = new DeviceInfo
@@ -171,7 +150,6 @@ public class ShutdownHub : Hub
             ConnectionId = Context.ConnectionId,
             LastSeen = DateTime.UtcNow
         };
-
         ConnectedDevices.AddOrUpdate(deviceId, deviceInfo, (key, oldValue) => deviceInfo);
         
         _logger.LogInformation($"Device registered: {deviceName} ({deviceId})");
@@ -179,19 +157,16 @@ public class ShutdownHub : Hub
         // Notify all clients about the new device
         await Clients.All.SendAsync("DeviceRegistered", deviceId, deviceName);
     }
-
     public async Task GetDevices()
     {
         var onlineDevices = ConnectedDevices.Values
             .Where(d => DateTime.UtcNow.Subtract(d.LastSeen).TotalMinutes < 5)
             .ToList();
-
         foreach (var device in onlineDevices)
         {
             await Clients.Caller.SendAsync("DeviceRegistered", device.DeviceId, device.DeviceName);
         }
     }
-
     public async Task Shutdown(string deviceId)
     {
         _logger.LogWarning($"Shutdown command received for device: {deviceId}");
@@ -211,7 +186,6 @@ public class ShutdownHub : Hub
             await Clients.Caller.SendAsync("Error", $"Device {deviceId} not found or offline");
         }
     }
-
     public async Task Restart(string deviceId)
     {
         _logger.LogWarning($"Restart command received for device: {deviceId}");
@@ -231,7 +205,6 @@ public class ShutdownHub : Hub
             await Clients.Caller.SendAsync("Error", $"Device {deviceId} not found or offline");
         }
     }
-
     public async Task GetStatus(string deviceId)
     {
         _logger.LogInformation($"Status request for device: {deviceId}");
@@ -245,31 +218,26 @@ public class ShutdownHub : Hub
             await Clients.Caller.SendAsync("Error", $"Device {deviceId} not found or offline");
         }
     }
-
     public async Task ShutdownConfirmation(string deviceId, string message)
     {
         _logger.LogInformation($"Shutdown confirmation from {deviceId}: {message}");
         await Clients.All.SendAsync("ShutdownConfirmation", deviceId, message);
     }
-
     public async Task RestartConfirmation(string deviceId, string message)
     {
         _logger.LogInformation($"Restart confirmation from {deviceId}: {message}");
         await Clients.All.SendAsync("RestartConfirmation", deviceId, message);
     }
-
     public async Task DeviceStatus(string deviceId, object status)
     {
         _logger.LogInformation($"Status received from {deviceId}");
         await Clients.All.SendAsync("DeviceStatus", deviceId, status);
     }
-
     public override async Task OnConnectedAsync()
     {
         _logger.LogInformation($"Client connected: {Context.ConnectionId}");
         await base.OnConnectedAsync();
     }
-
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         _logger.LogInformation($"Client disconnected: {Context.ConnectionId}");
@@ -282,11 +250,9 @@ public class ShutdownHub : Hub
             await Clients.All.SendAsync("DeviceDisconnected", disconnectedDevice.DeviceId);
             _logger.LogInformation($"Device disconnected: {disconnectedDevice.DeviceName}");
         }
-
         await base.OnDisconnectedAsync(exception);
     }
 }
-
 public class DeviceInfo
 {
     public string DeviceId { get; set; } = string.Empty;
