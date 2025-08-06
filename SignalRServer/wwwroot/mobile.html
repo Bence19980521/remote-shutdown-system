@@ -322,7 +322,7 @@
             }
 
             connectedDevices.forEach(deviceId => {
-                const deviceName = deviceId.split('_')[0];
+                const deviceName = deviceId; // Show full deviceId instead of just machine name
                 const deviceDiv = document.createElement('div');
                 deviceDiv.className = 'device';
                 deviceDiv.innerHTML = `
@@ -343,9 +343,9 @@
 
         function sendCommand(deviceId, command) {
             const actionText = command === 'shutdown' ? 'leállítod' : 'újraindítod';
-            const deviceName = deviceId.split('_')[0];
+            const deviceName = deviceId; // Show full deviceId in confirmation
             
-            if (confirm(`Biztosan ${actionText} a ${deviceName} számítógépet?`)) {
+            if (confirm(`Biztosan ${actionText} a ${deviceName} eszközt?`)) {
                 statusDiv.innerHTML = '⏳ Parancs küldése...';
                 statusDiv.className = 'status connecting';
                 
